@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Task Tracker</title>
+</head>
+<body>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            background: #16213e;
+            color: #e0e0e0;
+            font-size: 1em;
+            outline: none;
+        }
+
+        .input-row input:focus {
+            border-color: #00d4ff;
+        }
+
+        .input-row button {
+            padding: 10px 18px;
+            background: #00d4ff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .input-row button:hover {
+            background: #00b8d9;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        li {
+            background: #16213e;
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        li:hover {
+            background: #1a2a4a;
+        }
+
+        .done {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .delete-btn {
+            color: #ff4757;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .counter {
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 16px;
+        }
+
+        /* ---- MOBILE RESPONSIVE ---- */
+        /* @media is a "media query" — it applies styles ONLY when a condition is true */
+        /* max-width: 600px means "only on screens 600px wide or smaller" (phones) */
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 12px;    /* less padding on small screens */
+            }
+
+            h1 {
+                font-size: 1.4em;      /* slightly smaller heading */
+            }
+
+            /* Stack input and button vertically on narrow screens */
+            .input-row {
+                flex-direction: column; /* changes flex from horizontal to vertical */
+            }
+
+            .input-row button {
+                padding: 12px;         /* bigger tap target for fingers */
+            }
+
+            li {
+                padding: 14px;         /* bigger tap target for tasks too */
+                font-size: 1em;
+            }
+
+            .delete-btn {
+                font-size: 1.3em;      /* bigger X for fat fingers */
+                opacity: 1;            /* always visible on mobile (no hover) */
+                padding: 0 4px;
+            }
+        }
+    </style>
+
+    <div class="container">
+        <h1>Task Tracker</h1>
+
+        <div class="input-row">
+            <input type="text" id="taskInput" placeholder="Enter a task...">
+            <button id="addBtn">Add Task</button>
+        </div>
+
+        <ul id="taskList"></ul>
+
+        <p class="counter" id="counter"></p>
+    </div>
+
+    <script>
+        var input = document.getElementById('taskInput');
+        var button = document.getElementById('addBtn');
+        var list = document.getElementById('taskList');
+
+        function saveTasks() {
+            var items = document.querySelectorAll('#taskList li');
+            var tasks = [];
+            items.forEach(function(li) {
+                tasks.push({
+                    text: li.firstChild.textContent,
+                    done: li.classList.contains('done')
+                });
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            var saved = localStorage.getItem('tasks');
+            if (!saved) return;
+            var tasks = JSON.parse(saved);
+            tasks.forEach(function(task) {
+                createTaskElement(task.text, task.done);
+            });
+        }
+
+        function createTaskElement(text, isDone) {
+            var li = document.createElement('li');
+            li.textContent = text;
+
+            if (isDone) {
+                li.classList.add('done');
+            }
+
+            li.addEventListener('click', function() {
+                li.classList.toggle('done');
+                saveTasks();
+                updateCounter();
+            });
+
+            var deleteBtn = document.createElement('span');
+            deleteBtn.textContent = ' ✕';
+            deleteBtn.className = 'delete-btn';
+
+            deleteBtn.addEventListener('click', function(event) {
+                event.stopPropagation();
+                li.remove();
+                saveTasks();
+                updateCounter();
+            });
+
+            li.appendChild(deleteBtn);
+            list.appendChild(li);
+        }
+
+        function addTask() {
+            var text = input.value;
+            if (text.trim() === '') return;
+
+            createTaskElement(text, false);
+            saveTasks();
+            updateCounter();
+            input.value = '';
+        }
+
+        button.addEventListener('click', addTask);
+
+        input.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        loadTasks();
+
+        function updateCounter() {
+            var all = document.querySelectorAll('#taskList li');
+            var doneCount = document.querySelectorAll('#taskList li.done');
+            var counter = document.getElementById('counter');
+
+            if (all.length === 0) {
+                counter.textContent = 'No tasks yet. Add one above.';
+            } else {
+                counter.textContent = doneCount.length + ' of ' + all.length + ' tasks done';
+            }
+        }
+
+        updateCounter();
+    </script>
+</body>
+</html>
