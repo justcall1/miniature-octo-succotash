@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: clamp(2rem, 6vw, 4.5rem);
+            margin-bottom: 0.5em;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
+            color: #FFC107;
+        }
+        .date-label {
+            font-size: clamp(0.9rem, 2vw, 1.3rem);
+            color: #aaa;
+            margin-bottom: 2em;
+        }
+        .countdown {
+            display: flex;
+            gap: clamp(12px, 3vw, 32px);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .unit {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: clamp(16px, 3vw, 32px) clamp(20px, 4vw, 40px);
+            min-width: clamp(80px, 15vw, 140px);
+            text-align: center;
+            backdrop-filter: blur(8px);
+            transition: transform 0.2s;
+        }
+        .unit:hover { transform: scale(1.05); }
+        .number {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            color: #FFC107;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+        .label {
+            font-size: clamp(0.7rem, 1.5vw, 1rem);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #999;
+            margin-top: 8px;
+        }
+        .done {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            color: #FFC107;
+            text-align: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Countdown</h1>
+    <div class="date-label">June 22, 2026 — 6:00 AM</div>
+    <div class="countdown" id="countdown"></div>
+
+    <script>
+        const TARGET = new Date('2026-06-22T06:00:00').getTime();
+        const el = document.getElementById('countdown');
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function update() {
+            const now = Date.now();
+            const diff = TARGET - now;
+
+            if (diff <= 0) {
+                el.innerHTML = '<div class="done">🎉 Time\'s up! 🎉</div>';
+                return;
+            }
+
+            const days = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+
+            el.innerHTML = `
+                <div class="unit"><div class="number">${pad(days)}</div><div class="label">Days</div></div>
+                <div class="unit"><div class="number">${pad(hours)}</div><div class="label">Hours</div></div>
+                <div class="unit"><div class="number">${pad(minutes)}</div><div class="label">Minutes</div></div>
+                <div class="unit"><div class="number">${pad(seconds)}</div><div class="label">Seconds</div></div>
+            `;
+            requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+</body>
+</html>
